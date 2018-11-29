@@ -39,17 +39,33 @@
          (.charAt coll index))
        :else (aget coll index))
 
+     (def get nth)
+
      (defn count [coll]
        (.-length coll))))
 
 (def parseFloat
-  #?(:cljs js/Number.parseFloat :clj #(identity %)))
+  #?(:cljs js/Number.parseFloat
+     :clj #(cond
+             (string? %)
+             (Float/parseFloat %)
+             (char? %)
+             (if (Character/isDigit %)
+               (Float/parseFloat (str %))
+               Float/NaN)
+             :else %)))
 
 (def parseInt
-  #?(:cljs js/Number.parseInt :clj #(.intValue %)))
+  #?(:cljs js/Number.parseInt
+     :clj #(cond
+             (string? %)
+             (Integer/parseInt %)
+             (or (float? %) (double? %))
+             (.intValue %)
+             :else %)))
 
 (def isNaN
-  #?(:cljs js/Number.isNaN :clj (fn [_] false)))
+  #?(:cljs js/Number.isNaN :clj #(Double/isNaN %)))
 
 (def isFinite
   #?(:cljs js/Number.isFinite :clj #(not (.isInfinite ^Float %))))
@@ -142,7 +158,10 @@
                 "north"     northing}
      :clj  (reify UsngCoordinate
              (getZoneNumber [this] zone)
-             (getLatitudeBandLetter [this] (.charAt letter 0))
+             (getLatitudeBandLetter [this]
+               (if (string? letter)
+                 (.charAt letter 0)
+                 letter))
              (getColumnLetter [this] sq1)
              (getRowLetter [this] sq2)
              (getEasting [this]
@@ -150,13 +169,13 @@
                        digitPrecision (if (> precision 0) (dec precision) digitPrecision)
                        digitPrecision (if (> digitPrecision 5) 5 digitPrecision)]
                    (if (and (>= digitPrecision 1) (some? easting))
-                     (.intValue easting))))
+                     (parseInt easting))))
              (getNorthing [this]
                (let [digitPrecision 0
                      digitPrecision (if (> precision 0) (dec precision) digitPrecision)
                      digitPrecision (if (> digitPrecision 5) 5 digitPrecision)]
                  (if (and (>= digitPrecision 1) (some? northing))
-                   (.intValue northing))))
+                   (parseInt northing))))
              (getPrecision [this]
                (case precision
                  0 CoordinatePrecision/SIX_BY_EIGHT_DEGREES
@@ -165,7 +184,8 @@
                  3 CoordinatePrecision/ONE_KILOMETER
                  4 CoordinatePrecision/ONE_HUNDRED_METERS
                  5 CoordinatePrecision/TEN_METERS
-                 6 CoordinatePrecision/ONE_METER))
+                 6 CoordinatePrecision/ONE_METER
+                 CoordinatePrecision/SIX_BY_EIGHT_DEGREES))
              (toMgrsString [this])
              Object
              (equals [this b] true)
@@ -197,8 +217,8 @@
         lon (parseFloat lon)]
     (when (or (or (or (> lon 360) (< lon -180)) (> lat 84)) (< lat -80))
       (throw (error (str "usng.js, getZoneNumber: invalid input. lat: " (toFixed lat 4) " lon: " (toFixed lon 4)))))
-    (let [lonTemp (- (- (+ lon 180) (* (parseInt (/ (+ lon 180) 360)) 360)) 180)
-          zoneNumber (inc (parseInt (/ (+ lonTemp 180) 6)))
+    (let [lonTemp (- (- (+ lon 180) (* (parseInt (/ (+ lon 180) 360.0)) 360)) 180)
+          zoneNumber (inc (parseInt (/ (+ lonTemp 180) 6.0)))
           zoneNumber (if (and (and (and (>= lat 56) (< lat 64)) (>= lonTemp 3)) (< lonTemp 12)) 32 zoneNumber)]
       (cond
         (and (>= lat 72) (< lat 84)) zoneNumber
@@ -500,15 +520,19 @@
               is2DigitZone (and (not (isNaN n)) (isFinite n))
               zone (parseInt (subs input 0 (if is2DigitZone 2 1)))
               j (if is2DigitZone 2 1)
-              _let (nth input j)
-              sq1 (nth input (+ j 1))
-              sq2 (nth input (+ j 2))
+              _let (get input j)
+              sq1 (get input (+ j 1))
+              sq2 (get input (+ j 2))
               j (+ j 3)
               precision (/ (- (count input) j) 2)
-              east (subs input j (+ j precision))
+              east (try
+                     (subs input j (+ j precision))
+                     (catch Exception _ nil))
               j (+ j precision)
-              j (if (= (nth input j) " ") (inc j) j)
-              north (subs input j (+ j precision))]
+              j (if (= (get input j) " ") (inc j) j)
+              north (try
+                      (subs input j (+ j precision))
+                      (catch Exception _ nil))]
           (create-usng zone _let sq1 sq2 precision east north))))))
 
 (defn char< [a b]

@@ -15,7 +15,7 @@
                             :output-to     "target/usng/index.js"
                             :optimizations :advanced}}]}
   :aot :all
-  :source-paths ["src/clojure"]
+  :source-paths ["src/clojure" "test/clojure"]
   :java-source-paths ["src/java"]
   :junit ["test/java"]
   :profiles {:junit {:java-source-paths ["test/java"]
