@@ -47,7 +47,7 @@
 (def parseFloat
   #?(:cljs js/Number.parseFloat
      :clj #(cond
-             (string? %)
+             (and (string? %) (not= % ""))
              (Float/parseFloat %)
              (char? %)
              (if (Character/isDigit %)
@@ -58,11 +58,10 @@
 (def parseInt
   #?(:cljs js/Number.parseInt
      :clj #(cond
-             (string? %)
-             (Integer/parseInt %)
-             (or (float? %) (double? %))
-             (.intValue %)
-             :else %)))
+             (nil? %) ##NaN
+             (= % "") ##NaN
+             (string? %) (Integer/parseInt %)
+             :else (.intValue %))))
 
 (def isNaN
   #?(:cljs js/Number.isNaN :clj #(Double/isNaN %)))
@@ -90,61 +89,50 @@
 
 (defn create-dd [lat lon]
   #?(:cljs #js {"lat" lat "lon" lon}
-     :clj  (reify DecimalDegreesCoordinate
-             (getLat [this] lat)
-             (getLon [this] lon))))
+     :clj {:lat lat :lon lon}))
 
-(defn dd-get-lat [^DecimalDegreesCoordinate dd]
-  #?(:cljs (.-lat dd) :clj (.getLat dd)))
+(defn dd-get-lat [dd]
+  #?(:cljs (.-lat dd) :clj (:lat dd)))
 
-(defn dd-get-lon [^DecimalDegreesCoordinate dd]
-  #?(:cljs (.-lon dd) :clj (.getLon dd)))
+(defn dd-get-lon [dd]
+  #?(:cljs (.-lon dd) :clj (:lon dd)))
 
 (defn create-bbox [n e s w]
   #?(:cljs #js {"north" n "east" e "south" s "west" w}
-     :clj  (reify BoundingBox
-             (getNorth [this] n)
-             (getSouth [this] s)
-             (getEast [this] e)
-             (getWest [this] w))))
+     :clj {:north n :south s :east e :west w}))
 
-(defn bbox-get-north [^BoundingBox bb]
-  #?(:cljs (.-north bb) :clj (.getNorth bb)))
+(defn bbox-get-north [bb]
+  #?(:cljs (.-north bb) :clj (:north bb)))
 
-(defn bbox-get-east [^BoundingBox bb]
-  #?(:cljs (.-east bb) :clj (.getEast bb)))
+(defn bbox-get-east [bb]
+  #?(:cljs (.-east bb) :clj (:east bb)))
 
-(defn bbox-get-south [^BoundingBox bb]
-  #?(:cljs (.-south bb) :clj (.getSouth bb)))
+(defn bbox-get-south [bb]
+  #?(:cljs (.-south bb) :clj (:south bb)))
 
-(defn bbox-get-west [^BoundingBox bb]
-  #?(:cljs (.-west bb) :clj (.getWest bb)))
+(defn bbox-get-west [bb]
+  #?(:cljs (.-west bb) :clj (:west bb)))
 
 (defn create-utm
   ([easting northing zone] (create-utm easting northing zone nil))
   ([easting northing zone letter]
    #?(:cljs #js {"E" easting "N" northing "zone" zone "letter" letter}
-      :clj  (reify UtmCoordinate
-                (getEasting [this] easting)
-                (getNorthing [this] northing)
-                (getZoneNumber [this] zone)
-                (getLattitudeBand [this] letter)
-                (getPrecision [this])))))
+      :clj {:E easting :N northing :zone zone :letter letter})))
 
-(defn utm-get-easting [^UtmCoordinate utm]
-  #?(:cljs (.-E utm) :clj (.getEasting utm)))
+(defn utm-get-easting [utm]
+  #?(:cljs (.-E utm) :clj (:E utm)))
 
-(defn utm-get-northing [^UtmCoordinate utm]
-  #?(:cljs (.-N utm) :clj (.getNorthing utm)))
+(defn utm-get-northing [utm]
+  #?(:cljs (.-N utm) :clj (:N utm)))
 
-(defn utm-get-zone [^UtmCoordinate utm]
-  #?(:cljs (.-zone utm) :clj (.getZoneNumber utm)))
+(defn utm-get-zone [utm]
+  #?(:cljs (.-zone utm) :clj (:zone utm)))
 
-(defn utm-get-lattitude-band [^UtmCoordinate utm]
-  #?(:cljs (.-letter utm) :clj (.getLattitudeBand utm)))
+(defn utm-get-lattitude-band [utm]
+  #?(:cljs (.-letter utm) :clj (:letter utm)))
 
-(defn utm-get-precision [^UtmCoordinate utm]
-  #?(:cljs nil :clj (.getPrecision utm)))
+(defn utm-get-precision [utm]
+  #?(:cljs nil :clj (:precision utm)))
 
 (declare usng->str)
 
@@ -156,61 +144,34 @@
                 "precision" precision
                 "east"      easting
                 "north"     northing}
-     :clj  (reify UsngCoordinate
-             (getZoneNumber [this] zone)
-             (getLatitudeBandLetter [this]
-               (if (string? letter)
-                 (.charAt letter 0)
-                 letter))
-             (getColumnLetter [this] sq1)
-             (getRowLetter [this] sq2)
-             (getEasting [this]
-               (let [digitPrecision 0
-                       digitPrecision (if (> precision 0) (dec precision) digitPrecision)
-                       digitPrecision (if (> digitPrecision 5) 5 digitPrecision)]
-                   (if (and (>= digitPrecision 1) (some? easting))
-                     (parseInt easting))))
-             (getNorthing [this]
-               (let [digitPrecision 0
-                     digitPrecision (if (> precision 0) (dec precision) digitPrecision)
-                     digitPrecision (if (> digitPrecision 5) 5 digitPrecision)]
-                 (if (and (>= digitPrecision 1) (some? northing))
-                   (parseInt northing))))
-             (getPrecision [this]
-               (case precision
-                 0 CoordinatePrecision/SIX_BY_EIGHT_DEGREES
-                 1 CoordinatePrecision/ONE_HUNDRED_KILOMETERS
-                 2 CoordinatePrecision/TEN_KILOMETERS
-                 3 CoordinatePrecision/ONE_KILOMETER
-                 4 CoordinatePrecision/ONE_HUNDRED_METERS
-                 5 CoordinatePrecision/TEN_METERS
-                 6 CoordinatePrecision/ONE_METER
-                 CoordinatePrecision/SIX_BY_EIGHT_DEGREES))
-             (toMgrsString [this])
-             Object
-             (equals [this b] true)
-             (toString [this] (usng->str this)))))
+     :clj {:zone      zone
+           :let       letter
+           :sq1       sq1
+           :sq2       sq2
+           :precision precision
+           :east      easting
+           :north     northing}))
 
-(defn usng-get-zone [^UsngCoordinate usng]
-  #?(:cljs (.-zone usng) :clj (.getZoneNumber usng)))
+(defn usng-get-zone [usng]
+  #?(:cljs (.-zone usng) :clj (:zone usng)))
 
-(defn usng-get-letter [^UsngCoordinate usng]
-  #?(:cljs (.-let usng) :clj (.getLatitudeBandLetter usng)))
+(defn usng-get-letter [usng]
+  #?(:cljs (.-let usng) :clj (:let usng)))
 
-(defn usng-get-column-letter [^UsngCoordinate usng]
-  #?(:cljs (.-sq1 usng) :clj (.getColumnLetter usng)))
+(defn usng-get-column-letter [usng]
+  #?(:cljs (.-sq1 usng) :clj (:sq1 usng)))
 
-(defn usng-get-row-letter [^UsngCoordinate usng]
-  #?(:cljs (.-sq2 usng) :clj (.getRowLetter usng)))
+(defn usng-get-row-letter [usng]
+  #?(:cljs (.-sq2 usng) :clj (:sq2 usng)))
 
-(defn usng-get-easting [^UsngCoordinate usng]
-  #?(:cljs (.-east usng) :clj (.getEasting usng)))
+(defn usng-get-easting [usng]
+  #?(:cljs (.-east usng) :clj (:east usng)))
 
-(defn usng-get-northing [^UsngCoordinate usng]
-  #?(:cljs (.-north usng) :clj (.getNorthing usng)))
+(defn usng-get-northing [usng]
+  #?(:cljs (.-north usng) :clj (:north usng)))
 
-(defn usng-get-precision [^UsngCoordinate usng]
-  #?(:cljs (.-precision usng) :clj (min 5 (inc (.getIntValue (.getPrecision usng))))))
+(defn usng-get-precision [usng]
+  #?(:cljs (.-precision usng) :clj (:precision usng)))
 
 (defn getZoneNumber [lat lon]
   (let [lat (parseFloat lat)
@@ -276,6 +237,19 @@
              easting (+ (* k0 N (+ A (/ (* (+ (- 1 T) C) (* A A A)) 6) (/ (* (- (+ (- 5 (* 18 T)) (* T T) (* 72 C)) (* 58 primeSquared)) (* A A A A A)) 120))) EASTING_OFFSET)
              northing (* k0 (+ M (* N (Math/tan latRad) (+ (/ (* A A) 2) (/ (* (+ (- 5 T) (* 9 C) (* 4 C C)) (* A A A A)) 24) (/ (* (- (+ (- 61 (* 58 T)) (* T T) (* 600 C)) (* 330 primeSquared)) (* A A A A A A)) 720)))))]
          (create-utm easting northing zoneNumber))))))
+
+(defn dd->utm-with-ns
+  ([isNad83? dd] (dd->utm-with-ns isNad83? dd nil))
+  ([isNad83? dd zone]
+   (let [utm (dd->utm isNad83? dd zone)
+         northing (utm-get-northing utm)
+         easting (utm-get-easting utm)
+         zone (utm-get-zone utm)
+         letter (if (< northing 0) "S" "N")
+         northing (if (< northing 0)
+                    (+ northing NORTHING_OFFSET)
+                    northing)]
+     (create-utm easting northing zone letter))))
 
 (defn findSet [zoneNum]
   (let [v (mod (parseInt zoneNum) 6)]
@@ -355,11 +329,11 @@
              " "
              (repeat "0"
                      (- digitPrecision (count (str easting))))
-             easting
+             (parseInt easting)
              " "
              (repeat "0"
                      (- digitPrecision (count (str northing))))
-             northing)))))
+             (parseInt northing))))))
 
 (defn bbox->usng [isNad83? bb]
   (let [north (bbox-get-north bb)
@@ -533,7 +507,7 @@
               north (try
                       (subs input j (+ j precision))
                       (catch Exception _ nil))]
-          (create-usng zone _let sq1 sq2 precision east north))))))
+          (create-usng zone _let sq1 sq2 precision (parseInt east) (parseInt north)))))))
 
 (defn char< [a b]
   #?(:cljs (< a b) :clj (< (int a) (int b))))
