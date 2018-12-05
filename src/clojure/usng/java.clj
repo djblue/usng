@@ -4,11 +4,7 @@
                               UtmCoordinate
                               BoundingBox
                               DecimalDegreesCoordinate
-                              CoordinatePrecision)
-           (org.codice.usng4j.impl UsngCoordinateImpl
-                                   UtmCoordinateImpl
-                                   BoundingBoxImpl
-                                   DecimalDegreesCoordinateImpl))
+                              CoordinatePrecision))
   (:gen-class
     :prefix "-"
     :main false
