@@ -30,13 +30,13 @@ import java.text.NumberFormat;
  * System.
  */
 public enum CoordinatePrecision {
-    SIX_BY_EIGHT_DEGREES(-1),
-    ONE_HUNDRED_KILOMETERS(0),
-    TEN_KILOMETERS(1),
-    ONE_KILOMETER(2),
-    ONE_HUNDRED_METERS(3),
-    TEN_METERS(4),
-    ONE_METER(5);
+    SIX_BY_EIGHT_DEGREES(0),
+    ONE_HUNDRED_KILOMETERS(1),
+    TEN_KILOMETERS(2),
+    ONE_KILOMETER(3),
+    ONE_HUNDRED_METERS(4),
+    TEN_METERS(5),
+    ONE_METER(6);
 
     private int precisionValue;
 
@@ -67,16 +67,18 @@ public enum CoordinatePrecision {
     public static CoordinatePrecision forEastNorth(int easting, int northing) {
         int maxValue = Math.max(easting, northing);
 
-        if (maxValue > 9999) {
+        if (maxValue > 100000) {
             return CoordinatePrecision.ONE_METER;
-        } else if (maxValue > 999) {
+        } else if (maxValue > 10000) {
             return CoordinatePrecision.TEN_METERS;
-        } else if (maxValue > 99) {
+        } else if (maxValue > 1000) {
             return CoordinatePrecision.ONE_HUNDRED_METERS;
-        } else if (maxValue > 9) {
+        } else if (maxValue > 100) {
             return CoordinatePrecision.ONE_KILOMETER;
+        } else if (maxValue > 10) {
+            return TEN_KILOMETERS;
         }
 
-        return CoordinatePrecision.TEN_KILOMETERS;
+        return CoordinatePrecision.ONE_HUNDRED_KILOMETERS;
     }
 }

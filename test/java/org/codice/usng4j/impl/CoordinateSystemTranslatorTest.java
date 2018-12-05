@@ -121,18 +121,18 @@ public class CoordinateSystemTranslatorTest {
     @Test
     public void testParseUsng() throws ParseException {
         //should return zone=5; letter=Q
-        UsngCoordinate parts = UsngCoordinateImpl.parseUsngString("5Q");
+        UsngCoordinate parts = coordinateSystemTranslator.parseUsngString("5Q");
         assertEquals(5, parts.getZoneNumber());
         assertEquals('Q', parts.getLatitudeBandLetter());
 
         //should return zone=12; letter=S
-        parts = UsngCoordinateImpl.parseUsngString("12S");
+        parts = coordinateSystemTranslator.parseUsngString("12S");
         assertEquals(12, parts.getZoneNumber());
         assertEquals('S', parts.getLatitudeBandLetter());
 
         //should return zone=5; letter=Q; square1=K; square2=B
 
-        parts = UsngCoordinateImpl.parseUsngString("5Q KB");
+        parts = coordinateSystemTranslator.parseUsngString("5Q KB");
         assertEquals(5, parts.getZoneNumber());
         assertEquals('Q', parts.getLatitudeBandLetter());
         assertEquals('K',
@@ -144,7 +144,7 @@ public class CoordinateSystemTranslatorTest {
 
         //should return zone=12; letter=S; square1=V; square2=C
 
-        parts = UsngCoordinateImpl.parseUsngString("12S VC");
+        parts = coordinateSystemTranslator.parseUsngString("12S VC");
         assertEquals(12, parts.getZoneNumber());
         assertEquals('S', parts.getLatitudeBandLetter());
         assertEquals('V',
@@ -156,7 +156,7 @@ public class CoordinateSystemTranslatorTest {
 
         //should return zone=5; letter=Q; square1=K; square2=B; easting=42785; northing=31517
 
-        parts = UsngCoordinateImpl.parseUsngString("5Q KB 42785 31517");
+        parts = coordinateSystemTranslator.parseUsngString("5Q KB 42785 31517");
         assertEquals(5, parts.getZoneNumber());
         assertEquals('Q', parts.getLatitudeBandLetter());
         assertEquals('K',
@@ -173,7 +173,7 @@ public class CoordinateSystemTranslatorTest {
 
         //should return zone=12; letter=S; square1=V; square2=C; easting=12900; northing=43292
 
-        parts = UsngCoordinateImpl.parseUsngString("12S VC 12900 43292");
+        parts = coordinateSystemTranslator.parseUsngString("12S VC 12900 43292");
         assertEquals(12, parts.getZoneNumber());
         assertEquals('S', parts.getLatitudeBandLetter());
         assertEquals('V',
@@ -192,18 +192,18 @@ public class CoordinateSystemTranslatorTest {
     @Test
     public void testParseMgrs() throws ParseException {
         //should return zone=5; letter=Q
-        UsngCoordinate parts = UsngCoordinateImpl.parseMgrsString("5Q");
+        UsngCoordinate parts = coordinateSystemTranslator.parseMgrsString("5Q");
         assertEquals(5, parts.getZoneNumber());
         assertEquals('Q', parts.getLatitudeBandLetter());
 
         //should return zone=12; letter=S
-        parts = UsngCoordinateImpl.parseMgrsString("12S");
+        parts = coordinateSystemTranslator.parseMgrsString("12S");
         assertEquals(12, parts.getZoneNumber());
         assertEquals('S', parts.getLatitudeBandLetter());
 
         //should return zone=5; letter=Q; square1=K; square2=B
 
-        parts = UsngCoordinateImpl.parseMgrsString("5QKB");
+        parts = coordinateSystemTranslator.parseMgrsString("5QKB");
         assertEquals(5, parts.getZoneNumber());
         assertEquals('Q', parts.getLatitudeBandLetter());
         assertEquals('K',
@@ -215,7 +215,7 @@ public class CoordinateSystemTranslatorTest {
 
         //should return zone=12; letter=S; square1=V; square2=C
 
-        parts = UsngCoordinateImpl.parseMgrsString("12SVC");
+        parts = coordinateSystemTranslator.parseMgrsString("12SVC");
         assertEquals(12, parts.getZoneNumber());
         assertEquals('S', parts.getLatitudeBandLetter());
         assertEquals('V',
@@ -227,7 +227,7 @@ public class CoordinateSystemTranslatorTest {
 
         //should return zone=5; letter=Q; square1=K; square2=B; easting=42785; northing=31517
 
-        parts = UsngCoordinateImpl.parseMgrsString("5QKB4278531517");
+        parts = coordinateSystemTranslator.parseMgrsString("5QKB4278531517");
         assertEquals(5, parts.getZoneNumber());
         assertEquals('Q', parts.getLatitudeBandLetter());
         assertEquals('K',
@@ -244,7 +244,7 @@ public class CoordinateSystemTranslatorTest {
 
         //should return zone=12; letter=S; square1=V; square2=C; easting=12900; northing=43292
 
-        parts = UsngCoordinateImpl.parseMgrsString("12SVC1290043292");
+        parts = coordinateSystemTranslator.parseMgrsString("12SVC1290043292");
         assertEquals(12, parts.getZoneNumber());
         assertEquals('S', parts.getLatitudeBandLetter());
         assertEquals('V',
@@ -380,7 +380,7 @@ public class CoordinateSystemTranslatorTest {
     @Test
     public void testConvertUsngToLatLon() throws ParseException {
         //should return north=19; east=-155; south=19; west=-155
-        UsngCoordinate usng = UsngCoordinateImpl.parseUsngString("5Q KB 42785 31517");
+        UsngCoordinate usng = coordinateSystemTranslator.parseUsngString("5Q KB 42785 31517");
         BoundingBox boundingBox = coordinateSystemTranslator.toBoundingBox(usng);
         assertEquals(19, Math.floor(boundingBox.getNorth()), 0);
         assertEquals(-156, Math.floor(boundingBox.getEast()), 0);
@@ -388,7 +388,7 @@ public class CoordinateSystemTranslatorTest {
         assertEquals(-156, Math.floor(boundingBox.getWest()), 0);
 
         //should return north=33; east=-111; south=33; west=-111
-        usng = UsngCoordinateImpl.parseUsngString("12S VC 12900 43292");
+        usng = coordinateSystemTranslator.parseUsngString("12S VC 12900 43292");
         boundingBox = coordinateSystemTranslator.toBoundingBox(usng);
         assertEquals(33, Math.floor(boundingBox.getNorth()), 0);
         assertEquals(-112, Math.floor(boundingBox.getEast()), 0);
@@ -400,25 +400,25 @@ public class CoordinateSystemTranslatorTest {
     public void testConvertBoundingBoxToUsng() throws ParseException {
         //should return 12S
         String usngString = "12S";
-        UsngCoordinate usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        UsngCoordinate usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(37, 31, -108, -114)));
 
         //should return 12S UD
         usngString = "12S UD";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(34.55, 34.45, -112.4, -112.3)));
 
         //should return 12S UD 7 1
         usngString = "12S UD 7 1";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(34.50, 34.45, -112.4, -112.4)));
 
         //should return 12S UD 65 24
         usngString = "12S UD 65 24";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(34.55,
                         34.55,
@@ -427,7 +427,7 @@ public class CoordinateSystemTranslatorTest {
 
         //should return 12S UD 649 241
         usngString = "12S UD 649 241";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(34.55,
                         34.55,
@@ -436,7 +436,7 @@ public class CoordinateSystemTranslatorTest {
 
         //should return 12S UD 6494 2412
         usngString = "12S UD 6494 2412";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(34.55,
                         34.55,
@@ -445,7 +445,7 @@ public class CoordinateSystemTranslatorTest {
 
         //should return 12S UD 649 241
         usngString = "12S UD 64941 24126";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(34.55,
                         34.55,
@@ -454,19 +454,19 @@ public class CoordinateSystemTranslatorTest {
 
         //should return 21H
         usngString = "21H";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(-30, -35, -53, -58)));
 
         //should return 21H UB
         usngString = "21H UB";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(-34.5, -35, -58.5, -58.5)));
 
         //should return 21H UB 41 63
         usngString = "21H UB 41 63";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(-34.665,
                         -34.66,
@@ -475,150 +475,150 @@ public class CoordinateSystemTranslatorTest {
 
         //should return 38K
         usngString = "38K";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(-11, -26, 51, 42)));
 
         //should return 38K LA
         usngString = "38K LA";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(-21.9, -22, 43.7, 43.6)));
 
         //should return 38K LA
         usngString = "38K LA 6 6";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(-22, -22, 43.7, 43.65)));
 
         //should return 38K LV 64 17
         usngString = "38K LV 66 12";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(-23.395, -23.39, 43.70, 43.695)));
 
         //should return 54S
         usngString = "54S";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(41, 33, 143, 138)));
 
         //should return 54S UD
         usngString = "54S UD";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(35, 35, 140, 139)));
 
         //should return 54S UE 41 63
         usngString = "54S UE 86 51";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(35.7, 35.7, 139.75, 139.745)));
         //should return 60R
         usngString = "60R";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(34, 23, 179, 172)));
 
         //should return 1R
         usngString = "1R";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(34, 23, -179, -172)));
 
         //should return 1R BM
         usngString = "1R BM";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(28, 28, 179.9, -179.9)));
 
         //should return 58N
         usngString = "58N";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(8, 1, 166, 159)));
 
         //should return 58M
         usngString = "58M";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(-1, -8, 166, 159)));
 
         //should return 58N
         usngString = "58N";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(8, -8, 166, 159)));
 
         //should return 60N
         usngString = "60N";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(8, 1, 179, 172)));
 
         //should return 60M
         usngString = "60M";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(-1, -8, 179, 172)));
 
         //should return 1N
         usngString = "1N";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(8, 1, -179, -172)));
 
         //should return 1M
         usngString = "1M";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(-1, -8, -179, -172)));
 
         //should return 1N AA
         usngString = "1N AA";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(0, 0, -179.9, 179.9)));
 
         //should return 30R
         usngString = "30R";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(34, 23, -1, -8)));
 
         //should return 31R
         usngString = "31R";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(34, 23, 1, 8)));
 
         //should return 31R
         usngString = "31R";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(34, 23, -1, 1)));
 
         //should return 30M
         usngString = "30M";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(-1, -8, -1, -8)));
 
         //should return 31N
         usngString = "31N";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(8, 1, 8, 1)));
 
         //should return 31M
         usngString = "31M";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(-1, -8, 8, 1)));
 
         //should return 31N
         usngString = "31N";
-        usngCoordinate = UsngCoordinateImpl.parseUsngString(usngString);
+        usngCoordinate = coordinateSystemTranslator.parseUsngString(usngString);
         assertEquals(usngCoordinate,
                 coordinateSystemTranslator.toUsng(new BoundingBoxImpl(8, -8, 1, -1)));
     }
@@ -960,7 +960,7 @@ public class CoordinateSystemTranslatorTest {
                  "18H XF 97593 00265"};
 
         for (int i = 0; i < usngStrings.length; i++) {
-            UsngCoordinate usngCoordinate = UsngCoordinateImpl.parseUsngString(usngStrings[i]);
+            UsngCoordinate usngCoordinate = coordinateSystemTranslator.parseUsngString(usngStrings[i]);
             executeGithubDataTest(latLons[i][0],
                     latLons[i][1],
                     eastNorthZones[i][0],
@@ -1005,7 +1005,7 @@ public class CoordinateSystemTranslatorTest {
     public void testLLBoxToUSNG() throws ParseException {
         //should return 18S UJ 2348 0648
         String usngString = "18S UJ 2349 0648";
-        UsngCoordinate expected = UsngCoordinateImpl.parseUsngString(usngString);
+        UsngCoordinate expected = coordinateSystemTranslator.parseUsngString(usngString);
         double lat = 38.8895;
         double lon = -77.0352;
         double lon2 = -77.0351;
@@ -1015,7 +1015,7 @@ public class CoordinateSystemTranslatorTest {
 
         //should return 18S UJ 234 064
         usngString = "18S UJ 234 064";
-        expected = UsngCoordinateImpl.parseUsngString(usngString);
+        expected = coordinateSystemTranslator.parseUsngString(usngString);
         lat = 38.8895;
         lon = -77.0352;
         lon2 = -77.035;
@@ -1040,7 +1040,7 @@ public class CoordinateSystemTranslatorTest {
                         {38.8895, -80}};
 
         for (int i = 0; i < usngStrings.length; i++) {
-            UsngCoordinate expected = UsngCoordinateImpl.parseUsngString(usngStrings[i]);
+            UsngCoordinate expected = coordinateSystemTranslator.parseUsngString(usngStrings[i]);
             DecimalDegreesCoordinate decimalDegreesCoordinate = new DecimalDegreesCoordinateImpl(expectedValues[i][0],
                     expectedValues[i][1]);
             UsngCoordinate actual = null;
@@ -1059,7 +1059,7 @@ public class CoordinateSystemTranslatorTest {
     @Ignore
     public void testUsngToLatLon() throws ParseException {
         //should return 38.8895 -77.0352
-        UsngCoordinate usng = UsngCoordinateImpl.parseUsngString("18S UJ 23487 06483");
+        UsngCoordinate usng = coordinateSystemTranslator.parseUsngString("18S UJ 23487 06483");
         double lat = 38.8895;
         double lon = -77.0352;
         DecimalDegreesCoordinate llResult = coordinateSystemTranslator.toLatLon(usng);
@@ -1078,7 +1078,7 @@ public class CoordinateSystemTranslatorTest {
                         {32, -102, -96, 24}};
 
         for (int i = 0; i < inputValues.length; i++) {
-            usng = UsngCoordinateImpl.parseUsngString(inputValues[i]);
+            usng = coordinateSystemTranslator.parseUsngString(inputValues[i]);
             BoundingBox result = coordinateSystemTranslator.toBoundingBox(usng);
             validateUsngToLatLonResult(expectedValues[i], result);
         }

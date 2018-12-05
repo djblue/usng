@@ -69,12 +69,15 @@
     (equals [this b] true)
     (toString [this] (usng/usng->str usng))))
 
+(defn enum->precision [^CoordinatePrecision enum]
+  (.getIntValue enum))
+
 (defn from-usng [^UsngCoordinate usng]
   {:zone      (.getZoneNumber usng)
    :let       (.getLatitudeBandLetter usng)
    :sq1       (.getColumnLetter usng)
    :sq2       (.getRowLetter usng)
-   :precision (.getIntValue (.getPrecision usng))
+   :precision (enum->precision (.getPrecision usng))
    :east      (.getEasting usng)
    :north     (.getNorthing usng)})
 
@@ -122,10 +125,10 @@
 (defmethod -toUsng DecimalDegreesCoordinate ^UsngCoordinate
   ([this decimalDegreesCoordinate]
    (let [isNad83? (.-state this)]
-     (create-usng (usng/dd->usng isNad83? (from-dd decimalDegreesCoordinate) (inc (.getIntValue CoordinatePrecision/ONE_METER))))))
+     (create-usng (usng/dd->usng isNad83? (from-dd decimalDegreesCoordinate) (enum->precision CoordinatePrecision/ONE_METER)))))
   ([this decimalDegreesCoordinate ^CoordinatePrecision coordinatePrecision]
    (let [isNad83? (.-state this)]
-     (create-usng (usng/dd->usng isNad83? (from-dd decimalDegreesCoordinate) (inc (.getIntValue coordinatePrecision)))))))
+     (create-usng (usng/dd->usng isNad83? (from-dd decimalDegreesCoordinate) (enum->precision coordinatePrecision))))))
 
 (defn -toBoundingBox
   (^BoundingBox [this ^UsngCoordinate usngCoordinate]
@@ -138,9 +141,11 @@
 
 (defn -parseUtmString ^UtmCoordinate [this ^String utmString])
 
-(defn -parseUsngString ^UsngCoordinate [this ^String usngString])
+(defn -parseUsngString ^UsngCoordinate [this ^String usngString]
+  (create-usng (usng/str->usng usngString)))
 
-(defn -parseMgrsString ^UsngCoordinate [this ^String mgrsString])
+(defn -parseMgrsString ^UsngCoordinate [this ^String mgrsString]
+  (create-usng (usng/str->usng mgrsString)))
 
 (def -getZoneNumber #(usng/getZoneNumber %2 %3))
 
