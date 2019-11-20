@@ -64,7 +64,10 @@
              :else (.intValue %))))
 
 (def isNaN
-  #?(:cljs js/Number.isNaN :clj #(Double/isNaN %)))
+  #?(:cljs js/Number.isNaN
+     :clj #(cond
+             (nil? %) true
+             :else (Double/isNaN %))))
 
 (def isFinite
   #?(:cljs js/Number.isFinite :clj #(not (.isInfinite ^Float %))))
@@ -311,8 +314,8 @@
 
 (defn usng->str [usng]
   (let [zone (usng-get-zone usng)
-        easting (usng-get-easting usng)
-        northing (usng-get-northing usng)
+        easting (parseInt (usng-get-easting usng))
+        northing (parseInt (usng-get-northing usng))
         precision (usng-get-precision usng)
         letter (usng-get-letter usng)
         sq1 (usng-get-column-letter usng)
@@ -329,11 +332,11 @@
              " "
              (repeat "0"
                      (- digitPrecision (count (str easting))))
-             (parseInt easting)
+             easting
              " "
              (repeat "0"
                      (- digitPrecision (count (str northing))))
-             (parseInt northing))))))
+             northing)))))
 
 (defn bbox->usng [isNad83? bb]
   (let [north (bbox-get-north bb)
@@ -344,8 +347,8 @@
         southNum (parseFloat south)
         eastNum (parseFloat east)
         westNum (parseFloat west)
-        lat (/ (+ northNum southNum) 2)
-        lon (/ (+ eastNum westNum) 2)
+        lat (/ (+ northNum southNum) 2.0)
+        lon (/ (+ eastNum westNum) 2.0)
         lat (if (>= lat 90) 89.9 (if (<= lat -90) -89.9 lat))
         lon (if (>= lon 180) 179.9 (if (<= lon -180) -179.9 lon))
         R 6371000
@@ -353,9 +356,9 @@
         phi2 (* southNum DEG_2_RAD)
         deltaPhi (* (- southNum northNum) DEG_2_RAD)
         deltaLlamda (* (- westNum eastNum) DEG_2_RAD)
-        height (* (Math/sin (/ deltaPhi 2)) (Math/sin (/ deltaPhi 2)))
+        height (* (Math/sin (/ deltaPhi 2.0)) (Math/sin (/ deltaPhi 2.0)))
         height (* (* R 2) (Math/atan2 (Math/sqrt height) (Math/sqrt (- 1 height))))
-        length (* (* (* (Math/cos phi1) (Math/cos phi2)) (Math/sin (/ deltaLlamda 2))) (Math/sin (/ deltaLlamda 2)))
+        length (* (* (* (Math/cos phi1) (Math/cos phi2)) (Math/sin (/ deltaLlamda 2.0))) (Math/sin (/ deltaLlamda 2.0)))
         length (* (* R 2) (Math/atan2 (Math/sqrt length) (Math/sqrt (- 1 length))))
         dist (max height length)
         lon (if (and (and (zero? lon) (or (> eastNum 90) (< eastNum -90))) (or (> westNum 90) (< westNum -90))) 180 lon)

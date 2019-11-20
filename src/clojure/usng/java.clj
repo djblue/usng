@@ -31,6 +31,18 @@
    :zone (.getZoneNumber utm)
    :letter (.getLattitudeBand utm)})
 
+(defn enum->precision [^CoordinatePrecision enum]
+  (.getIntValue enum))
+
+(defn from-usng [^UsngCoordinate usng]
+  {:zone      (.getZoneNumber usng)
+   :let       (.getLatitudeBandLetter usng)
+   :sq1       (.getColumnLetter usng)
+   :sq2       (.getRowLetter usng)
+   :precision (enum->precision (.getPrecision usng))
+   :east      (.getEasting usng)
+   :north     (.getNorthing usng)})
+
 (defn create-usng [usng]
   (reify UsngCoordinate
     (getZoneNumber [this] (:zone usng))
@@ -41,15 +53,15 @@
     (getColumnLetter [this] (:sq1 usng))
     (getRowLetter [this] (:sq2 usng))
     (getEasting [this]
-      (let [easting (:east usng)
-            precision (:precision usng)]
-        (if (and (some? easting) (> precision 1))
-          (usng/parseInt easting))))
+      (let [easting (:east usng)]
+        (if (some? easting)
+          (usng/parseInt easting)
+          0)))
     (getNorthing [this]
-      (let [northing (:north usng)
-            precision (:precision usng)]
-        (if (and (some? northing) (> precision 1))
-          (usng/parseInt northing))))
+      (let [northing (:north usng)]
+        (if (some? northing)
+          (usng/parseInt northing)
+          0)))
     (getPrecision [this]
       (case (:precision usng)
         0 CoordinatePrecision/SIX_BY_EIGHT_DEGREES
@@ -62,20 +74,8 @@
         CoordinatePrecision/SIX_BY_EIGHT_DEGREES))
     (toMgrsString [this])
     Object
-    (equals [this b] true)
+    (equals [this b] (= (from-usng this) (from-usng b)))
     (toString [this] (usng/usng->str usng))))
-
-(defn enum->precision [^CoordinatePrecision enum]
-  (.getIntValue enum))
-
-(defn from-usng [^UsngCoordinate usng]
-  {:zone      (.getZoneNumber usng)
-   :let       (.getLatitudeBandLetter usng)
-   :sq1       (.getColumnLetter usng)
-   :sq2       (.getRowLetter usng)
-   :precision (enum->precision (.getPrecision usng))
-   :east      (.getEasting usng)
-   :north     (.getNorthing usng)})
 
 (defn create-dd [dd]
   (reify DecimalDegreesCoordinate
@@ -129,8 +129,9 @@
 (defn -toBoundingBox
   (^BoundingBox [this ^UsngCoordinate usngCoordinate]
    (let [isNad83? (.-state this)
-         utm (usng/usng->utm (from-usng usngCoordinate))]
-     (create-bbox (usng/utm->bbox isNad83? utm 0))))
+         utm (usng/usng->utm (from-usng usngCoordinate))
+         accuracy (Math/floor (/ 100000 (Math/pow 10 (enum->precision (.getPrecision usngCoordinate)))))]
+     (create-bbox (usng/utm->bbox isNad83? utm accuracy))))
   (^BoundingBox [this ^UtmCoordinate utmCoordinate accuracy]
    (let [isNad83? (.-state this)]
      (create-bbox (usng/utm->bbox isNad83? (from-utm utmCoordinate) accuracy)))))
